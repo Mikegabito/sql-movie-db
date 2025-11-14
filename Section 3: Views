@@ -1,0 +1,77 @@
+--------------------------------------------------
+-- Section 3: Views
+--------------------------------------------------
+-- View: view_movie_summary
+-- Purpose:
+--   Summarize each movie with its main information and rating statistics.
+--   (Adapted from the assignment: original spec included director,
+--    but this schema does not have a directors table.)
+
+CREATE OR REPLACE VIEW view_movie_summary AS
+SELECT
+  m.movie_id,
+  m.title,
+  m.genre,
+  m.year_of_release,
+  m.renting_price,
+  -- Average rating based on all non-null ratings in rentings
+  AVG(r.rating) AS avg_rating,
+  -- Number of ratings (reviews) this movie has
+  COUNT(r.rating) AS review_count
+FROM movies m
+LEFT JOIN rentings r
+  ON r.movie_id = m.movie_id
+GROUP BY
+  m.movie_id,
+  m.title,
+  m.genre,
+  m.year_of_release,
+  m.renting_price;
+
+-- View: view_actor_summary
+-- Purpose:
+--   Show each actor with:
+--     - total number of movies they acted in
+--     - average rating of those movies (based on rentings).
+
+CREATE OR REPLACE VIEW view_actor_summary AS
+SELECT
+  a.actor_id,
+  a.name AS actor_name,
+  -- How many different movies this actor has acted in
+  COUNT(DISTINCT ai.movie_id) AS number_of_movies,
+  -- Average rating of all movies this actor played in
+  AVG(r.rating) AS avg_movie_rating
+FROM actors a
+LEFT JOIN actsin ai
+  ON ai.actor_id = a.actor_id
+LEFT JOIN rentings r
+  ON r.movie_id = ai.movie_id
+GROUP BY
+  a.actor_id,
+  a.name;
+
+-- View: view_genre_stats
+-- Purpose:
+--   Provide statistics per genre:
+--     - total number of movies in that genre
+--     - average rating of all movies in that genre (based on rentings).
+
+CREATE OR REPLACE VIEW view_genre_stats AS
+SELECT
+  m.genre AS genre_name,
+  -- Total distinct movies for each genre
+  COUNT(DISTINCT m.movie_id) AS total_movies,
+  -- Average rating for all movies in this genre
+  AVG(r.rating) AS avg_genre_rating
+FROM movies m
+LEFT JOIN rentings r
+  ON r.movie_id = m.movie_id
+GROUP BY
+  m.genre;
+
+-- NOTE:
+-- The original assignment includes an optional view:
+--   view_director_performance (director performance by average movie rating).
+-- This schema does not contain a 'directors' table or director_id in movies,
+-- so this view is not implemented here.
