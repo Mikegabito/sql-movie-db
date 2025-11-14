@@ -1,0 +1,53 @@
+--------------------------------------------------
+-- Section 4: Stored Functions
+--------------------------------------------------
+-- Function: get_actor_avg_rating
+-- Purpose:
+--   Given an actor_id, return the average rating of all movies
+--   that the actor has played in. The rating data comes from
+--   the rentings table. Returns NULL if no ratings exist.
+
+CREATE OR REPLACE FUNCTION get_actor_avg_rating(p_actor_id INT)
+RETURNS NUMERIC(3,1) AS $$
+DECLARE
+  v_avg_rating NUMERIC(3,1);
+BEGIN
+  SELECT
+    AVG(r.rating)::NUMERIC(3,1)
+  INTO v_avg_rating
+  FROM actsin ai
+  JOIN rentings r
+    ON r.movie_id = ai.movie_id
+  WHERE ai.actor_id = p_actor_id
+    AND r.rating IS NOT NULL;
+
+  RETURN v_avg_rating;
+END;
+$$ LANGUAGE plpgsql;
+
+
+$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_genre_top_movie(p_genre TEXT)
+RETURNS TABLE (
+  movie_id INT,
+  title TEXT,
+  avg_rating NUMERIC(3,1)
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.movie_id,
+    m.title,
+    AVG(r.rating)::NUMERIC(3,1) AS avg_rating
+  FROM movies m
+  JOIN rentings r
+    ON r.movie_id = m.movie_id
+  WHERE m.genre = p_genre
+    AND r.rating IS NOT NULL
+  GROUP BY m.movie_id, m.title
+  ORDER BY avg_rating DESC
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql;
+
