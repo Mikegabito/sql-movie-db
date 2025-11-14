@@ -73,3 +73,41 @@ In this section I implemented 4 triggers:
    - Trigger: `trg_log_movie_activity`
    - Purpose: Logs every INSERT and DELETE operation on the `movies` table, storing table name, operation type, record ID, and timestamp.
 
+## Section 3 – Views
+
+In this section, I created several views to summarize key information from the movie rental database.
+
+1. **`view_movie_summary`**
+   - Columns:
+     - `movie_id`
+     - `title`
+     - `genre`
+     - `year_of_release`
+     - `renting_price`
+     - `avg_rating` (average of all non-null `rating` values from `rentings`)
+     - `review_count` (number of ratings recorded for that movie)
+   - Purpose: Quickly see each movie along with its basic information and rating statistics.
+   - Note: The original assignment mentions including a director field, but this schema does not have a `directors` table, so the view was adapted accordingly.
+
+2. **`view_actor_summary`**
+   - Columns:
+     - `actor_id`
+     - `actor_name`
+     - `number_of_movies` (count of distinct movies in `actsin` for that actor)
+     - `avg_movie_rating` (average of all ratings for movies the actor played in)
+   - Purpose: Summarize an actor's activity in the database and how their movies perform in terms of ratings.
+
+3. **`view_genre_stats`**
+   - Columns:
+     - `genre_name`
+     - `total_movies` (number of distinct movies in that genre)
+     - `avg_genre_rating` (average rating across all movies in that genre)
+   - Purpose: Provide a quick overview of how each genre performs and how many movies belong to it.
+
+I tested these views in Supabase using simple queries like:
+
+```sql
+SELECT * FROM view_movie_summary LIMIT 10;
+SELECT * FROM view_actor_summary ORDER BY number_of_movies DESC;
+SELECT * FROM view_genre_stats ORDER BY avg_genre_rating DESC NULLS LAST;
+
