@@ -28,6 +28,20 @@ $$ LANGUAGE plpgsql;
 
 $ LANGUAGE plpgsql;
 
+### 2. `get_genre_top_movie(genre_name)`
+
+- Returns the highest-rated movie in a given genre.
+- Implemented with `RETURNS TABLE`, returning:
+  - `movie_id`
+  - `title`
+  - `avg_rating`
+- Uses `movies` and `rentings` to calculate the average rating per movie, then selects the top one in that genre.
+
+Example:
+```sql
+SELECT * FROM get_genre_top_movie('Action');
+```
+
 CREATE OR REPLACE FUNCTION get_genre_top_movie(p_genre TEXT)
 RETURNS TABLE (
   movie_id INT,
