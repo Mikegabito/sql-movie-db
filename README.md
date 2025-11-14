@@ -36,7 +36,6 @@ In Section 1, I added:
   - `rentings.movie_id` → `movies.movie_id` (ON DELETE CASCADE)
 - Set `movies.genre` as NOT NULL, so every movie has a valid genre.
 
-All SQL for this part is implemented in `sql/sql_week2_solution.sql`.
 
 ## How I Run the SQL
 
@@ -126,5 +125,25 @@ Example:
 SELECT actor_id, name,
        get_actor_avg_rating(actor_id) AS actor_average_rating
 FROM actors;
+
+## Section 5 – Analytical Queries
+
+In this section I wrote 12 analytical SQL queries to explore complex logic and relationships in the movie rental database, for example:
+
+- Top 5 movies by average rating.
+- Number of movies per actor and actors who appeared in more than 3 movies.
+- Actors whose average movie rating is greater than 7.
+- Movies that have no reviews.
+- Youngest actor in each genre.
+- Genres with an average rating higher than the overall average.
+- Actors who never appeared in a movie rated below 5.
+- Yearly statistics: total movies, number of reviews, and average rating per release year.
+- The most active reviewer (customer with most ratings).
+- Average runtime per genre.
+- Average number of movies rented per active customer.
+
+
+
+
 
 
