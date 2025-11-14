@@ -1,0 +1,72 @@
+--------------------------------------------------
+-- Section 6: Summary Reports
+--------------------------------------------------
+-- Report 1: Top 3 genres by total number of reviews (ratings)
+SELECT
+  m.genre,
+  COUNT(r.rating) AS total_reviews,
+  AVG(r.rating)   AS avg_rating_in_genre
+FROM movies m
+JOIN rentings r
+  ON r.movie_id = m.movie_id
+WHERE r.rating IS NOT NULL
+GROUP BY m.genre
+ORDER BY total_reviews DESC
+LIMIT 3;
+
+
+-- Report 2: Top 5 actors by total movie appearances
+SELECT
+  a.actor_id,
+  a.name AS actor_name,
+  COUNT(ai.movie_id) AS total_appearances
+FROM actors a
+JOIN actsin ai
+  ON ai.actor_id = a.actor_id
+GROUP BY a.actor_id, a.name
+ORDER BY total_appearances DESC, actor_name
+LIMIT 5;
+
+-- Report 3: Actor performance by average movie rating
+-- NOTE:
+--   The original assignment suggests "Director performance by average movie rating".
+--   This schema does not include a directors table, so this report is adapted
+--   to show actor performance instead.
+
+SELECT
+  a.actor_id,
+  a.name AS actor_name,
+  COUNT(DISTINCT ai.movie_id)        AS total_movies,
+  AVG(r.rating)                      AS avg_movie_rating
+FROM actors a
+JOIN actsin ai
+  ON ai.actor_id = a.actor_id
+JOIN rentings r
+  ON r.movie_id = ai.movie_id
+WHERE r.rating IS NOT NULL
+GROUP BY a.actor_id, a.name
+ORDER BY avg_movie_rating DESC, total_movies DESC;
+
+-- Report 4: Movies that still received reviews (ratings) after 2020
+SELECT DISTINCT
+  m.movie_id,
+  m.title,
+  m.genre,
+  m.year_of_release,
+  MAX(r.date_renting) AS last_review_date
+FROM movies m
+JOIN rentings r
+  ON r.movie_id = m.movie_id
+WHERE r.rating IS NOT NULL
+  AND r.date_renting > DATE '2020-12-31'
+GROUP BY m.movie_id, m.title, m.genre, m.year_of_release
+ORDER BY last_review_date DESC;
+
+-- Report 5: Genres sorted by average movie duration (runtime)
+SELECT
+  genre,
+  COUNT(*)        AS total_movies,
+  AVG(runtime)    AS avg_runtime
+FROM movies
+GROUP BY genre
+ORDER BY avg_runtime DESC;
