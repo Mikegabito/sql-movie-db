@@ -1,0 +1,50 @@
+-- Ensures that movie ratings are valid values between 0 and 10.
+ALTER TABLE rentings
+ADD CONSTRAINT chk_rentings_rating_between_0_10
+CHECK (rating BETWEEN 0 AND 10);
+
+-- Ensures that every actor has a valid name (not NULL and not an empty string).
+ALTER TABLE actors
+ALTER COLUMN name SET NOT NULL;
+
+ALTER TABLE actors
+ADD CONSTRAINT chk_actors_name_not_empty
+CHECK (length(trim(name)) > 0);
+
+-- Ensures that no movie has an unrealistic or invalid release year.
+ALTER TABLE movies
+ADD CONSTRAINT chk_movies_year_of_release_min_1900
+CHECK (year_of_release >= 1900);
+
+-- Prevents inserting two movies with the same title released in the same year.
+ALTER TABLE movies
+ADD CONSTRAINT uq_movies_title_release_year
+UNIQUE (title, year_of_release);
+
+-- Connects each 'actsin' record to an existing movie.
+ALTER TABLE actsin
+ADD CONSTRAINT fk_actsin_movie
+FOREIGN KEY (movie_id) REFERENCES movies(movie_id)
+ON DELETE CASCADE;
+
+-- Connects each 'actsin' record to an existing actor.
+ALTER TABLE actsin
+ADD CONSTRAINT fk_actsin_actor
+FOREIGN KEY (actor_id) REFERENCES actors(actor_id)
+ON DELETE CASCADE;
+
+-- Ensures that every renting belongs to an existing customer.
+ALTER TABLE rentings
+ADD CONSTRAINT fk_rentings_customer
+FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+ON DELETE CASCADE;
+
+-- Ensures that every renting references an existing movie.
+ALTER TABLE rentings
+ADD CONSTRAINT fk_rentings_movie
+FOREIGN KEY (movie_id) REFERENCES movies(movie_id)
+ON DELETE CASCADE;
+
+-- Ensures that every movie contains a valid genre.
+ALTER TABLE movies
+ALTER COLUMN genre SET NOT NULL;
