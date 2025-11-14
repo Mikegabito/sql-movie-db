@@ -142,6 +142,32 @@ In this section I wrote 12 analytical SQL queries to explore complex logic and r
 - Average runtime per genre.
 - Average number of movies rented per active customer.
 
+## Section 6 – Summary Reports
+
+In this section I created 5 summary reports that combine multiple tables:
+
+1. **Top 3 genres by total reviews**
+   - Uses `movies` and `rentings`.
+   - Shows each genre, the total number of ratings, and the average rating.
+
+2. **Top 5 actors by total appearances**
+   - Uses `actors` and `actsin`.
+   - Counts how many movies each actor has appeared in and returns the top 5.
+
+3. **Actor performance by average movie rating**  
+   *(adapted from the original “director performance” requirement, since this schema has no directors table)*
+   - Uses `actors`, `actsin`, and `rentings`.
+   - Shows each actor, how many movies they played in, and the average rating of those movies.
+
+4. **Movies still receiving reviews after 2020**
+   - Uses `movies` and `rentings`.
+   - Lists movies that have at least one rating with `date_renting > '2020-12-31'`, including the last review date.
+
+5. **Genres sorted by average duration of movies**
+   - Uses `movies`.
+   - For each genre, shows the total number of movies and the average runtime, ordered by average duration.
+
+All these reports are implemented and commented in `sql/sql_week2_solution.sql` under **Section 6 – Summary Reports**.
 
 
 
