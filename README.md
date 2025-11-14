@@ -111,3 +111,20 @@ SELECT * FROM view_movie_summary LIMIT 10;
 SELECT * FROM view_actor_summary ORDER BY number_of_movies DESC;
 SELECT * FROM view_genre_stats ORDER BY avg_genre_rating DESC NULLS LAST;
 
+
+## Section 4 – Stored Functions
+
+This section includes the two functions required by the assignment:
+
+### 1. `get_actor_avg_rating(actor_id)`
+- Returns the average rating of all movies an actor has played in.
+- Uses the tables `actsin` (actor–movie relationship) and `rentings` (ratings).
+- Returns `NULL` if the actor's movies have no ratings.
+
+Example:
+```sql
+SELECT actor_id, name,
+       get_actor_avg_rating(actor_id) AS actor_average_rating
+FROM actors;
+
+
