@@ -167,7 +167,7 @@ In this section I created 5 summary reports that combine multiple tables:
    - Uses `movies`.
    - For each genre, shows the total number of movies and the average runtime, ordered by average duration.
 
-All these reports are implemented and commented in `sql/sql_week2_solution.sql` under **Section 6 – Summary Reports**.
+
 
 
 
