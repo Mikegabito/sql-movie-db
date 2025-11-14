@@ -14,7 +14,7 @@ The database uses the following tables:
 
 ## File Structure
 
-- `sql/sql_week2_solution.sql`  
+
   Contains all SQL code for:
   - Section 1: Relationships & Constraints
   - Section 2: Triggers
@@ -42,7 +42,7 @@ In Section 1, I added:
 I use **Supabase** as my PostgreSQL database:
 1. I connect to my project in Supabase.
 2. I open the SQL editor.
-3. I copy and paste the corresponding section from `sql/sql_week2_solution.sql`.
+3. I copy and paste the corresponding section in this case Section 1
 4. I run the script and verify the result.
 
 This repository is mainly for documentation and version control of my SQL learning process.
@@ -109,7 +109,7 @@ I tested these views in Supabase using simple queries like:
 SELECT * FROM view_movie_summary LIMIT 10;
 SELECT * FROM view_actor_summary ORDER BY number_of_movies DESC;
 SELECT * FROM view_genre_stats ORDER BY avg_genre_rating DESC NULLS LAST;
-
+```
 
 ## Section 4 – Stored Functions
 
@@ -125,6 +125,7 @@ Example:
 SELECT actor_id, name,
        get_actor_avg_rating(actor_id) AS actor_average_rating
 FROM actors;
+```
 
 ## Section 5 – Analytical Queries
 
