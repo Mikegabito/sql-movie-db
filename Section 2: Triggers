@@ -1,0 +1,142 @@
+-- Section 2.1: Add avg_rating column to movies
+-- This column will store the average rating of each movie based on rentings.
+ALTER TABLE movies
+ADD COLUMN avg_rating NUMERIC(3,1);
+
+-- Optional: initialize avg_rating for existing movies
+UPDATE movies m
+SET avg_rating = sub.avg_rating
+FROM (
+  SELECT movie_id, AVG(rating)::NUMERIC(3,1) AS avg_rating
+  FROM rentings
+  WHERE rating IS NOT NULL
+  GROUP BY movie_id
+) sub
+WHERE m.movie_id = sub.movie_id;
+
+-- Function: update_movie_avg_rating
+-- Purpose: Recalculate and update the average rating of a movie
+--          whenever a renting rating is inserted or updated.
+CREATE OR REPLACE FUNCTION update_movie_avg_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE movies
+  SET avg_rating = sub.avg_rating
+  FROM (
+    SELECT movie_id, AVG(rating)::NUMERIC(3,1) AS avg_rating
+    FROM rentings
+    WHERE movie_id = NEW.movie_id
+      AND rating IS NOT NULL
+    GROUP BY movie_id
+  ) AS sub
+  WHERE movies.movie_id = sub.movie_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: trg_update_movie_avg_rating
+-- Fires after inserting or updating a rating in rentings.
+-- It updates the corresponding movie's avg_rating.
+CREATE TRIGGER trg_update_movie_avg_rating
+AFTER INSERT OR UPDATE OF rating ON rentings
+FOR EACH ROW
+WHEN (NEW.rating IS NOT NULL)
+EXECUTE FUNCTION update_movie_avg_rating();
+-- Function: validate_rentings_rating
+-- Purpose: Prevent inserting or updating invalid rating values in rentings.
+CREATE OR REPLACE FUNCTION validate_rentings_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Allow NULL ratings (no review yet)
+  IF NEW.rating IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- Enforce rating range between 0 and 10 (inclusive)
+  IF NEW.rating < 0 OR NEW.rating > 10 THEN
+    RAISE EXCEPTION 'Rating must be between 0 and 10 (inclusive). Got: %', NEW.rating;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: trg_validate_rentings_rating
+-- Fires before inserting or updating rentings.
+-- It validates that the rating value is within the expected range.
+CREATE TRIGGER trg_validate_rentings_rating
+BEFORE INSERT OR UPDATE ON rentings
+FOR EACH ROW
+EXECUTE FUNCTION validate_rentings_rating();
+
+-- Function: prevent_movie_delete_if_related
+-- Purpose: Prevent deleting a movie if it still has related rentings or actsin rows.
+CREATE OR REPLACE FUNCTION prevent_movie_delete_if_related()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_rentings_count INT;
+  v_actsin_count   INT;
+BEGIN
+  SELECT COUNT(*) INTO v_rentings_count
+  FROM rentings
+  WHERE movie_id = OLD.movie_id;
+
+  SELECT COUNT(*) INTO v_actsin_count
+  FROM actsin
+  WHERE movie_id = OLD.movie_id;
+
+  IF v_rentings_count > 0 OR v_actsin_count > 0 THEN
+    RAISE EXCEPTION
+      'Cannot delete movie %: it still has related rentings (% rows) or actsin (% rows).',
+      OLD.movie_id, v_rentings_count, v_actsin_count;
+  END IF;
+
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: trg_prevent_movie_delete_if_related
+-- Fires before deleting a movie.
+-- If there are related rentings or actsin rows, the delete is blocked.
+CREATE TRIGGER trg_prevent_movie_delete_if_related
+BEFORE DELETE ON movies
+FOR EACH ROW
+EXECUTE FUNCTION prevent_movie_delete_if_related();
+
+-- Section 2.5: Logging table
+-- This table stores simple logs for insert/delete operations.
+CREATE TABLE IF NOT EXISTS log_activity (
+  log_id      SERIAL PRIMARY KEY,
+  table_name  TEXT NOT NULL,
+  operation   TEXT NOT NULL,
+  record_id   INT,
+  log_time    TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+-- Function: log_movie_activity
+-- Purpose: Insert a log row whenever a movie is inserted or deleted.
+CREATE OR REPLACE FUNCTION log_movie_activity()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO log_activity(table_name, operation, record_id)
+    VALUES ('movies', 'INSERT', NEW.movie_id);
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    INSERT INTO log_activity(table_name, operation, record_id)
+    VALUES ('movies', 'DELETE', OLD.movie_id);
+    RETURN OLD;
+  END IF;
+
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: trg_log_movie_activity
+-- Logs every INSERT and DELETE operation on the movies table.
+CREATE TRIGGER trg_log_movie_activity
+AFTER INSERT OR DELETE ON movies
+FOR EACH ROW
+EXECUTE FUNCTION log_movie_activity();
