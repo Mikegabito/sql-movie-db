@@ -47,3 +47,29 @@ I use **Supabase** as my PostgreSQL database:
 4. I run the script and verify the result.
 
 This repository is mainly for documentation and version control of my SQL learning process.
+
+## Section 2 – Triggers
+
+In this section I implemented 4 triggers:
+
+1. **Average Rating Trigger**
+   - Function: `update_movie_avg_rating()`
+   - Trigger: `trg_update_movie_avg_rating`
+   - Purpose: Whenever a renting rating is inserted or updated, the movie's `avg_rating` column is recalculated based on all non-null ratings in `rentings`.
+
+2. **Rating Validation Trigger**
+   - Function: `validate_rentings_rating()`
+   - Trigger: `trg_validate_rentings_rating`
+   - Purpose: Prevents inserting or updating invalid ratings. Only `NULL` or values between 0 and 10 are allowed.
+
+3. **Delete Protection Trigger**
+   - Function: `prevent_movie_delete_if_related()`
+   - Trigger: `trg_prevent_movie_delete_if_related`
+   - Purpose: Blocks deletion of a movie if it still has related rows in `rentings` or `actsin`.
+
+4. **Logging Trigger (Optional)**
+   - Table: `log_activity`
+   - Function: `log_movie_activity()`
+   - Trigger: `trg_log_movie_activity`
+   - Purpose: Logs every INSERT and DELETE operation on the `movies` table, storing table name, operation type, record ID, and timestamp.
+
